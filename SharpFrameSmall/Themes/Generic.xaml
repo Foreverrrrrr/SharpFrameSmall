@@ -847,6 +847,7 @@
                                 ItemsSource="{Binding ItemsSource, RelativeSource={RelativeSource TemplatedParent}}"
                                 RowBackground="#FF303030"
                                 RowHeaderWidth="0"
+                                ScrollViewer.CanContentScroll="False"
                                 SelectionMode="Single">
 
                                 <!--  DataGrid 资源  -->
@@ -861,12 +862,12 @@
                                         <Setter Property="BorderBrush" Value="#FF555555" />
                                         <Setter Property="BorderThickness" Value="0,0,1,1" />
                                     </Style>
-                                    <!--  单元格内 TextBlock 默认样式  -->
+                                    <!--  单元格内 TextBlock 默认样式（显示模式）  -->
                                     <Style TargetType="TextBlock">
                                         <Setter Property="Foreground" Value="#FFDEDEDE" />
                                         <Setter Property="VerticalAlignment" Value="Center" />
                                     </Style>
-                                    <!--  单元格内 TextBox 默认样式  -->
+                                    <!--  单元格内 TextBox 默认样式（编辑模式）  -->
                                     <Style x:Key="{x:Type TextBox}" TargetType="TextBox">
                                         <Setter Property="Background" Value="#FF2A2A2A" />
                                         <Setter Property="Foreground" Value="#FFDEDEDE" />
@@ -917,7 +918,7 @@
                                             </Setter.Value>
                                         </Setter>
                                     </Style>
-                                    <!--  行样式  -->
+                                    <!--  行样式（不设 Foreground/BorderBrush，避免 WPF 在 Cell 上创建 FindAncestor 绑定）  -->
                                     <Style TargetType="DataGridRow">
                                         <Setter Property="Background" Value="#FF303030" />
                                         <Style.Triggers>
@@ -1049,7 +1050,7 @@
                                     </DataGridTemplateColumn>
                                 </local:SafeDataGrid.Columns>
 
-                                <!--  行详情模板  -->
+                                <!--  行详情模板（展开后显示字段列表）  -->
                                 <local:SafeDataGrid.RowDetailsTemplate>
                                     <DataTemplate>
                                         <Border

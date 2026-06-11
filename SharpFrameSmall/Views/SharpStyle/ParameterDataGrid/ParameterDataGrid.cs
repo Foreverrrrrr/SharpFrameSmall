@@ -16,7 +16,7 @@ using ValidationResult = SharpFrameSmall.Structure.Parameter.ValidationResult;
 namespace SharpFrameSmall.Views.SharpStyle
 {
     /// <summary>
-    /// 布尔取反转换器
+    /// 布尔取反转换器（ParameterDataGrid 内部使用）
     /// </summary>
     public class InvertBoolConverter : IValueConverter
     {
@@ -33,6 +33,11 @@ namespace SharpFrameSmall.Views.SharpStyle
         }
     }
 
+    /// <summary>
+    /// EditMode → IsReadOnly 转换器
+    /// <para>Full 模式返回 false（可编辑），其他返回 true（只读）</para>
+    /// <para>ConverterParameter="ValueOnly" 时：Full 和 ValueOnly 都返回 false</para>
+    /// </summary>
     public class EditModeToReadOnlyConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
@@ -42,10 +47,11 @@ namespace SharpFrameSmall.Views.SharpStyle
 
             bool isReadOnly;
             if (param == "ValueOnly")
-                isReadOnly = mode == ParameterEditMode.ReadOnly;
+                isReadOnly = mode == ParameterEditMode.ReadOnly;  // ReadOnly → true, 其他 → false
             else
-                isReadOnly = mode != ParameterEditMode.Full;
+                isReadOnly = mode != ParameterEditMode.Full;       // Full → false, 其他 → true
 
+            // Invert 参数：返回 IsEnabled（ReadOnly 的反值）
             if (param == "Invert")
                 return mode == ParameterEditMode.Full;
 
@@ -56,6 +62,10 @@ namespace SharpFrameSmall.Views.SharpStyle
             => throw new NotSupportedException();
     }
 
+    /// <summary>
+    /// EditMode → Visibility 转换器
+    /// <para>Full 模式返回 Visible，其他返回 Collapsed</para>
+    /// </summary>
     public class EditModeToVisibilityConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
@@ -68,6 +78,11 @@ namespace SharpFrameSmall.Views.SharpStyle
             => throw new NotSupportedException();
     }
 
+    /// <summary>
+    /// 绑定代理 - 解决 DataGridTextColumn 不在可视化树中无法使用 FindAncestor 的问题。
+    /// <para>Freezable 会自动继承父级的 DataContext 和 NameScope，因此可以作为 StaticResource 放在
+    /// ControlTemplate.Resources 中，供 DataGridColumn 等非可视化树元素通过 Source 绑定访问。</para>
+    /// </summary>
     public class BindingProxy : Freezable
     {
         protected override Freezable CreateInstanceCore() => new BindingProxy();
@@ -86,6 +101,13 @@ namespace SharpFrameSmall.Views.SharpStyle
         }
     }
 
+    /// <summary>
+    /// 安全的 DataGrid 子类 - 双层防护，彻底消除 WPF DataGrid 已知缺陷导致的绑定错误输出。
+    /// <para>WPF 内部会在 DataGridCell.Foreground / BorderBrush 上自动设置 FindAncestor 绑定；</para>
+    /// <para>行被移除时 Cell 脱离可视化树，绑定找不到祖先就报 Data Error 4。</para>
+    /// <para>第一防线：通过反射替换 PropertyMetadata._coerceValueCallback，阻止 WPF 创建该绑定。</para>
+    /// <para>备用防线：在行移除期间临时抑制 PresentationTraceSources.DataBindingSource 输出。</para>
+    /// </summary>
     public class SafeDataGrid : DataGrid
     {
         static SafeDataGrid()
@@ -93,17 +115,24 @@ namespace SharpFrameSmall.Views.SharpStyle
             TryPatchCellCoercion();
         }
 
+        // 备用防线：在行容器被清除时（行移除/回收前）暂时屏蔽数据绑定错误输出
         protected override void ClearContainerForItemOverride(DependencyObject element, object item)
         {
             var source = PresentationTraceSources.DataBindingSource;
             var saved = source.Switch.Level;
-            source.Switch.Level = SourceLevels.Critical; 
+            source.Switch.Level = SourceLevels.Critical;  // 屏蔽 Error 级别输出
 
             base.ClearContainerForItemOverride(element, item);
+
+            // 在所有 UI 布局/渲染完成后恢复（ApplicationIdle 确保覆盖延迟绑定刷新）
             Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle,
                 new Action(() => source.Switch.Level = saved));
         }
 
+        /// <summary>
+        /// 第一防线：通过反射将 DataGridCell.Foreground/BorderBrush 的 CoerceValueCallback
+        /// 替换为直通回调，跨过 WPF 内部的 SyncProperties 绑定创建逻辑
+        /// </summary>
         private static void TryPatchCellCoercion()
         {
             try
@@ -120,7 +149,7 @@ namespace SharpFrameSmall.Views.SharpStyle
                 var bbMeta = DataGridCell.BorderBrushProperty.GetMetadata(typeof(DataGridCell));
                 if (bbMeta != null) field.SetValue(bbMeta, pass);
             }
-            catch { /* 反射失败时忽略 */ }
+            catch { /* 反射失败时静默忽略，备用防线仍生效 */ }
         }
     }
 
@@ -139,7 +168,16 @@ namespace SharpFrameSmall.Views.SharpStyle
 
     /// <summary>
     /// 参数数据表格自定义控件 - 支持多字段参数的可视化编辑
+    /// <para>功能：参数列表展示、可展开行详情（字段编辑）、右键菜单操作、字段增删、保存</para>
+    /// <para>通过 Store + StoreKey 关联 ParameterStore 中的一种参数集合</para>
+    /// <para>在 Generic.xaml 中定义 ControlTemplate</para>
     /// </summary>
+    /// <example>
+    /// &lt;!-- 一个配方对应多个 ParameterDataGrid，每个显示一种类型 --&gt;
+    /// &lt;local:ParameterDataGrid Store="{Binding Store}" StoreKey="System" Title="系统参数" /&gt;
+    /// &lt;local:ParameterDataGrid Store="{Binding Store}" StoreKey="Label"  Title="标签参数" /&gt;
+    /// &lt;local:ParameterDataGrid Store="{Binding Store}" StoreKey="Attdef" Title="贴附参数" /&gt;
+    /// </example>
     public class ParameterDataGrid : Control
     {
         static ParameterDataGrid()
@@ -152,7 +190,7 @@ namespace SharpFrameSmall.Views.SharpStyle
         #region 依赖属性
 
         /// <summary>
-        /// 参数数据源
+        /// 参数数据源（由 Store+StoreKey 自动关联，通常无需手动设置）
         /// </summary>
         public static readonly DependencyProperty ItemsSourceProperty =
             DependencyProperty.Register(
@@ -215,7 +253,7 @@ namespace SharpFrameSmall.Views.SharpStyle
         }
 
         /// <summary>
-        /// 是否为完全编辑模式
+        /// 是否为完全编辑模式（可增删参数/字段、改名称/描述等结构性操作）
         /// </summary>
         [System.ComponentModel.Browsable(false)]
         public bool IsFullAccessEnabled => EditMode == ParameterEditMode.Full;
@@ -260,6 +298,7 @@ namespace SharpFrameSmall.Views.SharpStyle
 
         /// <summary>
         /// 参数仓储实例
+        /// <para>配合 StoreKey 自动关联集合，内置增删改排保存命令</para>
         /// </summary>
         public static readonly DependencyProperty StoreProperty =
             DependencyProperty.Register(
@@ -274,6 +313,9 @@ namespace SharpFrameSmall.Views.SharpStyle
             set => SetValue(StoreProperty, value);
         }
 
+        /// <summary>
+        /// 在 Store 中注册的 TableSuffix 键（如 "System", "Label"）
+        /// </summary>
         public static readonly DependencyProperty StoreKeyProperty =
             DependencyProperty.Register(
                 nameof(StoreKey),
@@ -288,8 +330,17 @@ namespace SharpFrameSmall.Views.SharpStyle
         }
 
         /// <summary>
-        /// 保存完成后的回调命令
+        /// 保存完成后的回调命令（可选）
+        /// <para>保存成功后自动调用，CommandParameter 为当前 Store 实例</para>
+        /// <para>用于 ViewModel 在保存后执行额外逻辑（如刷新缓存、通知其他模块等）</para>
         /// </summary>
+        /// <example>
+        /// &lt;local:ParameterDataGrid Store="{Binding Store}" StoreKey="System"
+        ///     SaveCallbackCommand="{Binding OnSavedCommand}" /&gt;
+        /// 
+        /// // ViewModel 中：
+        /// OnSavedCommand = new DelegateCommand&lt;ParameterStore&gt;(store => { /* 保存后逻辑 */ });
+        /// </example>
         public static readonly DependencyProperty SaveCallbackCommandProperty =
             DependencyProperty.Register(
                 nameof(SaveCallbackCommand),
@@ -304,23 +355,23 @@ namespace SharpFrameSmall.Views.SharpStyle
         }
 
         /// <summary>
-        /// 内部保存命令
+        /// 内部保存命令（模板保存按钮绑定此命令，用户无需关心）
         /// </summary>
-        public static readonly DependencyProperty InternalSaveCommandProperty =
+        private static readonly DependencyProperty InternalSaveCommandProperty =
             DependencyProperty.Register(
                 nameof(InternalSaveCommand),
                 typeof(ICommand),
                 typeof(ParameterDataGrid),
                 new PropertyMetadata(null));
 
-        public ICommand InternalSaveCommand
+        private ICommand InternalSaveCommand
         {
             get => (ICommand)GetValue(InternalSaveCommandProperty);
             set => SetValue(InternalSaveCommandProperty, value);
         }
 
         /// <summary>
-        /// 最近一次保存结果
+        /// 最近一次保存的验证结果
         /// </summary>
         public static readonly DependencyProperty LastValidationResultProperty =
             DependencyProperty.Register(
@@ -336,7 +387,7 @@ namespace SharpFrameSmall.Views.SharpStyle
         }
 
         /// <summary>
-        /// 状态栏消息文本
+        /// 状态栏消息文本（保存成功/失败后显示）
         /// </summary>
         public static readonly DependencyProperty StatusMessageProperty =
             DependencyProperty.Register(
@@ -390,7 +441,7 @@ namespace SharpFrameSmall.Views.SharpStyle
         private DispatcherTimer _statusTimer;
 
         /// <summary>
-        /// 显示状态消息
+        /// 显示状态消息（自动在指定秒数后清除）
         /// </summary>
         private void ShowStatus(bool success, string message, double autoHideSeconds = 5)
         {
@@ -412,12 +463,18 @@ namespace SharpFrameSmall.Views.SharpStyle
             _statusTimer.Start();
         }
 
+        /// <summary>
+        /// Store 或 StoreKey 变更时重新关联
+        /// </summary>
         private static void OnStoreBindingChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             var ctrl = (ParameterDataGrid)d;
 
+            // 退订旧 Store 的属性变更
             if (e.OldValue is ParameterStore oldStore)
                 oldStore.PropertyChanged -= ctrl.OnStorePropertyChanged;
+
+            // 订阅新 Store 的属性变更（等待 IsReady）
             if (e.NewValue is ParameterStore newStore)
                 newStore.PropertyChanged += ctrl.OnStorePropertyChanged;
 
@@ -425,7 +482,7 @@ namespace SharpFrameSmall.Views.SharpStyle
         }
 
         /// <summary>
-        /// 监听 Store 属性
+        /// 监听 Store 属性变更（IsReady / RecipeName 等）
         /// </summary>
         private void OnStorePropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
@@ -436,11 +493,16 @@ namespace SharpFrameSmall.Views.SharpStyle
             }
         }
 
+        /// <summary>
+        /// 根据 Store + StoreKey 关联集合
+        /// <para>仅在 Store.IsReady 且 StoreKey 已注册时生效</para>
+        /// </summary>
         private void UpdateStoreBinding()
         {
             if (Store == null || string.IsNullOrEmpty(StoreKey))
                 return;
 
+            // 未就绪时跳过，等 IsReady 变更后会再次调用
             if (!Store.IsReady)
                 return;
 
@@ -449,6 +511,8 @@ namespace SharpFrameSmall.Views.SharpStyle
                 return;
 
             ItemsSource = collection;
+
+            // 设置内部保存命令（模板保存按钮始终使用此命令）
             if (InternalSaveCommand == null)
                 InternalSaveCommand = new StoreCommand(this, ExecuteSave, canAlwaysExecute: true);
         }
@@ -505,6 +569,7 @@ namespace SharpFrameSmall.Views.SharpStyle
 
             if (_dataGrid != null)
             {
+                // 转发选择变更事件
                 _dataGrid.SelectionChanged += (s, e) =>
                 {
                     RaiseEvent(new SelectionChangedEventArgs(
@@ -512,6 +577,8 @@ namespace SharpFrameSmall.Views.SharpStyle
                         e.RemovedItems,
                         e.AddedItems));
                 };
+
+                // 命令代理存入 Tag，供 ContextMenu 绑定
                 _dataGrid.Tag = new CommandProxy(this);
             }
 
@@ -519,12 +586,15 @@ namespace SharpFrameSmall.Views.SharpStyle
             AddHandler(ToggleButton.CheckedEvent, new RoutedEventHandler(OnExpandToggle));
             AddHandler(ToggleButton.UncheckedEvent, new RoutedEventHandler(OnExpandToggle));
 
+            // 状态栏初始可见性
             UpdateStatusBarVisibility();
+
+            // 模板就绪后，若 Store + StoreKey 已通过绑定/XAML 设置，立即关联数据
             UpdateStoreBinding();
         }
 
         /// <summary>
-        /// 处理模板内按钮点击（添加 / 删除）
+        /// 处理模板内按钮点击（添加字段 / 删除字段）
         /// </summary>
         private void OnTemplateButtonClick(object sender, RoutedEventArgs e)
         {
@@ -587,7 +657,7 @@ namespace SharpFrameSmall.Views.SharpStyle
         public int SelectedIndex => _dataGrid?.SelectedIndex ?? -1;
 
         /// <summary>
-        /// 提交编辑 + 清除选中
+        /// 安全操作：提交编辑 + 清除选中（防止 DataGrid 绑定错误）
         /// </summary>
         private void PrepareForCollectionChange()
         {
@@ -603,7 +673,7 @@ namespace SharpFrameSmall.Views.SharpStyle
         #region 内置 CRUD 操作
 
         /// <summary>
-        /// 向前添加参数
+        /// 向前添加参数（在选中行之前插入）
         /// </summary>
         private static void ExecuteAddForward(ParameterDataGrid owner, object parameter)
         {
@@ -626,7 +696,7 @@ namespace SharpFrameSmall.Views.SharpStyle
         }
 
         /// <summary>
-        /// 向后添加参数
+        /// 向后添加参数（在选中行之后插入）
         /// </summary>
         private static void ExecuteAddBackward(ParameterDataGrid owner, object parameter)
         {
@@ -664,7 +734,7 @@ namespace SharpFrameSmall.Views.SharpStyle
         }
 
         /// <summary>
-        /// 排序参数 ID 升序
+        /// 排序参数（按 ID 升序）
         /// </summary>
         private static void ExecuteSort(ParameterDataGrid owner, object parameter)
         {
@@ -679,7 +749,7 @@ namespace SharpFrameSmall.Views.SharpStyle
         }
 
         /// <summary>
-        /// 保存参数
+        /// 保存参数（带验证）
         /// </summary>
         private static void ExecuteSave(ParameterDataGrid owner, object parameter)
         {
@@ -689,6 +759,7 @@ namespace SharpFrameSmall.Views.SharpStyle
             bool success = owner.Store.SaveByKeyWithValidation(owner.StoreKey, out result);
             owner.LastValidationResult = result;
 
+            // 状态栏反馈
             var time = DateTime.Now.ToString("HH:mm:ss");
             if (success)
             {
@@ -705,6 +776,7 @@ namespace SharpFrameSmall.Views.SharpStyle
 
             owner.RaiseEvent(new SaveCompletedEventArgs(SaveCompletedEvent, success, result));
 
+            // 保存成功后调用用户的回调命令，传递 Store
             if (success && owner.SaveCallbackCommand != null
                 && owner.SaveCallbackCommand.CanExecute(owner.Store))
             {
@@ -756,7 +828,7 @@ namespace SharpFrameSmall.Views.SharpStyle
         #region 内部类
 
         /// <summary>
-        /// Store 命令
+        /// Store 命令 - 执行前自动 CommitEdit + UnselectAll，延迟执行实际操作
         /// </summary>
         private class StoreCommand : ICommand
         {
@@ -794,7 +866,7 @@ namespace SharpFrameSmall.Views.SharpStyle
         }
 
         /// <summary>
-        /// 命令代理
+        /// 命令代理 - 存入 DataGrid.Tag，供 ContextMenu 绑定
         /// </summary>
         private class CommandProxy
         {

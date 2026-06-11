@@ -383,6 +383,10 @@ namespace SharpFrameSmall.Common.Modbus
                 }
             }
         }
+        /// <summary>
+        /// 字符串颠倒
+        /// </summary>
+        public bool ReverseString { get; set; } = false;
 
         #endregion
 
@@ -2836,31 +2840,13 @@ namespace SharpFrameSmall.Common.Modbus
                 if (package.IsSuccess && package.DataBuff.Length > 0)
                 {
                     var stringBytes = new byte[Math.Min(package.DataBuff.Length, length)];
-                    switch (Order)
+                    var bytes = package.DataBuff.Take(length).ToArray();
+                    var str = Encoding.ASCII.GetString(bytes).TrimEnd('\0');
+                    if (ReverseString)
                     {
-                        case ByteOrder.ABCD:
-                        case ByteOrder.CDAB:
-                            Array.Copy(package.DataBuff, stringBytes, stringBytes.Length);
-                            break;
-
-                        case ByteOrder.BADC:
-                        case ByteOrder.DCBA:
-                            for (int i = 0; i < stringBytes.Length; i += 2)
-                            {
-                                if (i + 1 < package.DataBuff.Length)
-                                {
-                                    stringBytes[i] = package.DataBuff[i + 1];
-                                    if (i + 1 < stringBytes.Length)
-                                        stringBytes[i + 1] = package.DataBuff[i];
-                                }
-                                else if (i < package.DataBuff.Length)
-                                {
-                                    stringBytes[i] = package.DataBuff[i];
-                                }
-                            }
-                            break;
+                        str = new string(str.Reverse().ToArray());
                     }
-                    package.Value = Encoding.ASCII.GetString(stringBytes).TrimEnd('\0');
+                    package.Value = str;
                 }
             }
             catch (Exception ex)

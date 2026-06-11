@@ -136,6 +136,7 @@ namespace SharpFrameSmall.Logic.Base
         /// <summary>
         /// 流程初始化
         /// </summary>
+        /// <param name="objects">自定义对象</param>
         /// <param name="spintime">线程循环休眠时间</param>
         public static void NewClass(object[] objects, int spintime = 50)
         {
@@ -160,13 +161,29 @@ namespace SharpFrameSmall.Logic.Base
             }
         }
 
+        /// <summary>
+        /// 共享参数方法回调
+        /// </summary>
+        public static void GetShared()
+        {
+            List<ProductionThreadInfo> snapshot;
+            lock (_autoThLock) { snapshot = _autoTh.ToList(); }
+            foreach (var item in snapshot)
+            {
+                item.Class?.OnGetShared();
+            }
+        }
+
+        /// <summary>
+        /// 初始化方法回调
+        /// </summary>
         public static void InitializeStart()
         {
             List<ProductionThreadInfo> snapshot;
             lock (_autoThLock) { snapshot = _autoTh.ToList(); }
             foreach (var item in snapshot)
             {
-                item.Class?.Initialize(new object());
+                item.Class?.Initialize(item.Class);
             }
         }
 
@@ -175,7 +192,7 @@ namespace SharpFrameSmall.Logic.Base
             ProductionThreadInfo t;
             lock (_autoThLock) { t = _autoTh.Find(x => x.Thread_Name == classname); }
             if (t?.Class != null)
-                t.Class.Initialize(new object());
+                t.Class.Initialize(t.Class);
         }
 
         private static void Thread_Configuration(string class_na, MethodInfo method, object class_new, int spintime)
@@ -528,7 +545,7 @@ namespace SharpFrameSmall.Logic.Base
         /// 初始化
         /// </summary>
         /// <param name="thread"></param>
-        public abstract void Initialize(object thread);
+        public abstract void Initialize(ProcessBase thread);
 
         /// <summary>
         /// 自动运行

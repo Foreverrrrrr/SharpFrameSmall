@@ -256,6 +256,11 @@ namespace SharpFrameSmall.ViewModels
             {
                 eventAggregator.GetEvent<ParameterUpdateEvent>().Publish(x);
             });
+            eventAggregator.GetEvent<ParameterUpdateEvent>().Subscribe((x) =>
+            {
+                ProcessBase.SetShared(x);
+                ProcessBase.GetShared();
+            });
             Remove = new DelegateCommand(() =>
             {
                 if (System.Windows.MessageBox.Show($"Are you sure to delete formula \"{ParameterName}\"?",

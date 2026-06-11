@@ -20,15 +20,20 @@ namespace SharpFrameSmall.Logic.AutoMain
         public override ManualResetEvent Interrupt { get ; set ; }
 
         public override event Action<DateTime, string> LogEvent;
+
         public IEventAggregator eventAggregator { get; set; }
+
+        public ParameterStore Store { get; set; }
 
         protected override void OnGetShared()
         {
             eventAggregator = GetShared<IEventAggregator>();
+            Store = GetShared<ParameterStore>();
         }
 
-        public override void Initialize(object thread)
+        public override void Initialize(ProcessBase thread)
         {
+
         }
 
         protected override void Main(ProcessBase thread)

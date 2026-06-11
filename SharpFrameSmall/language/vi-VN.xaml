@@ -1,0 +1,55 @@
+﻿<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:sys="clr-namespace:System;assembly=mscorlib">
+
+    <!--  按钮与标签  -->
+    <sys:String x:Key="HomeView">Trang chính</sys:String>
+    <sys:String x:Key="ParameterView">Tham số</sys:String>
+    <sys:String x:Key="DebugView">Debug</sys:String>
+    <sys:String x:Key="DataView">CSDL</sys:String>
+    <sys:String x:Key="InfoView">SX</sys:String>
+    <sys:String x:Key="LogView">Log</sys:String>
+    <sys:String x:Key="SaveButton">Lưu</sys:String>
+    <sys:String x:Key="NewButton">Thêm</sys:String>
+    <sys:String x:Key="PopUpButton">OK</sys:String>
+    <sys:String x:Key="NewTextBlock">Tên</sys:String>
+    <sys:String x:Key="RevampButton">Đổi tên</sys:String>
+    <sys:String x:Key="RemoveButton">Xóa</sys:String>
+    <sys:String x:Key="OpenExcelButton">ErrorCode</sys:String>
+    <sys:String x:Key="NewDefaultTextBlock">Mặc định</sys:String>
+    <sys:String x:Key="ModelComboBoxTextBlock">Tên:</sys:String>
+    <sys:String x:Key="ProgramFlowChartTextBlock">Flow</sys:String>
+    <sys:String x:Key="SystemTabItemHeader">Hệ thống</sys:String>
+    <sys:String x:Key="CommunicationTabItemHeader">Truyền thông</sys:String>
+    <sys:String x:Key="CraftTabItemHeader">Công nghệ</sys:String>
+    <sys:String x:Key="Login">Đăng nhập</sys:String>
+    <sys:String x:Key="Outlogin">Đăng xuất</sys:String>
+    <sys:String x:Key="Administration">Quản lý</sys:String>
+    <sys:String x:Key="loading">Đang tải...</sys:String>
+    <sys:String x:Key="username">User</sys:String>
+    <sys:String x:Key="password">Mật khẩu</sys:String>
+    <sys:String x:Key="newpassword">Mật khẩu mới</sys:String>
+    <sys:String x:Key="level">Level</sys:String>
+    <sys:String x:Key="newly">Thêm</sys:String>
+    <sys:String x:Key="revamp">Sửa</sys:String>
+    <sys:String x:Key="delete">Xóa</sys:String>
+    <sys:String x:Key="QRCodeInquiry">QR</sys:String>
+    <sys:String x:Key="TimePeriodQuery">Theo thời gian</sys:String>
+    <sys:String x:Key="ExportToExcel">Xuất</sys:String>
+    <!--  DataGrid 列头  -->
+    <sys:String x:Key="ParameterViewIDTextBlock">STT</sys:String>
+    <sys:String x:Key="ParameterViewNameTextBlock">Tên</sys:String>
+    <sys:String x:Key="ParameterViewTypeTextBlock">Loại</sys:String>
+    <sys:String x:Key="ParameterViewValueTextBlock">Giá trị</sys:String>
+    <sys:String x:Key="ParameterViewAddressTextBlock">Địa chỉ</sys:String>
+    <sys:String x:Key="ParameterViewlengthTextBlock">Độ dài</sys:String>
+    <sys:String x:Key="ParameterViewAddForwardTextBlock">Thêm trước</sys:String>
+    <sys:String x:Key="ParameterViewAddBackwardTextBlock">Thêm sau</sys:String>
+    <sys:String x:Key="ParameterViewSortTextBlock">Sắp xếp</sys:String>
+    <sys:String x:Key="ParameterViewdeleteTextBlock">Xóa</sys:String>
+    <sys:String x:Key="LogControlTimeTextBlock">Thời gian</sys:String>
+    <sys:String x:Key="LogControllevelTextBlock">Mức</sys:String>
+    <sys:String x:Key="LogControlValueTextBlock">Nội dung</sys:String>
+
+</ResourceDictionary>

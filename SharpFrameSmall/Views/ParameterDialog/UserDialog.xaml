@@ -1,0 +1,116 @@
+﻿<UserControl
+    x:Class="SharpFrameSmall.Views.ParameterDialog.UserDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local1="clr-namespace:SharpFrameSmall.Views"
+    xmlns:prism="http://prismlibrary.com/"
+    Width="500"
+    Height="400"
+    prism:ViewModelLocator.AutoWireViewModel="True"
+    Background="White">
+    <UserControl.Resources>
+        <local1:PermissionToEnabledConverter x:Key="PermissionEnabled" />
+    </UserControl.Resources>
+    <Grid Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="160" />
+        </Grid.RowDefinitions>
+        <DataGrid
+            Grid.Row="0"
+            AutoGenerateColumns="False"
+            FontSize="16"
+            IsReadOnly="True"
+            ItemsSource="{Binding Users}">
+            <DataGrid.Columns>
+                <DataGridTextColumn
+                    Width="*"
+                    Binding="{Binding Name}"
+                    Header="{DynamicResource username}" />
+                <DataGridTextColumn
+                    Width="*"
+                    Binding="{Binding PassWord}"
+                    Header="{DynamicResource password}" />
+                <DataGridTextColumn
+                    Width="*"
+                    Binding="{Binding Level}"
+                    Header="{DynamicResource level}" />
+            </DataGrid.Columns>
+        </DataGrid>
+        <Border
+            Grid.Row="1"
+            Margin="3"
+            Padding="10"
+            BorderBrush="#DDD"
+            BorderThickness="1">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="10" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="30" />
+                    <RowDefinition Height="30" />
+                    <RowDefinition Height="30" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <TextBlock
+                    VerticalAlignment="Center"
+                    FontSize="17"
+                    Text="{DynamicResource username}" />
+                <ComboBox
+                    Grid.Row="0"
+                    Grid.Column="2"
+                    Width="130"
+                    HorizontalAlignment="Left"
+                    HorizontalContentAlignment="Center"
+                    Panel.ZIndex="1"
+                    Background="White"
+                    BorderBrush="Black"
+                    FontSize="20"
+                    SelectedIndex="0"
+                    SelectedValue="{Binding Username, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                    SelectedValuePath="Content">
+                    <ComboBoxItem Background="White" Content="Operator" />
+                    <ComboBoxItem Background="White" Content="Technician" />
+                    <ComboBoxItem Background="White" Content="Engineer" />
+                    <ComboBoxItem Background="White" Content="Admin" />
+                </ComboBox>
+                <TextBlock
+                    Grid.Row="1"
+                    VerticalAlignment="Center"
+                    FontSize="17"
+                    Text="{DynamicResource newpassword}" />
+                <TextBox
+                    Grid.Row="1"
+                    Grid.Column="2"
+                    FontSize="20"
+                    Text="{Binding EditUser, UpdateSourceTrigger=PropertyChanged}" />
+
+                <StackPanel
+                    Grid.Row="3"
+                    Grid.ColumnSpan="3"
+                    Margin="0,10,0,0"
+                    HorizontalAlignment="Right"
+                    Orientation="Horizontal">
+                    <Button
+                        Margin="5,0"
+                        Command="{Binding AddCommand}"
+                        Content="{DynamicResource newly}" />
+                    <Button
+                        Margin="5,0"
+                        Command="{Binding UpdateCommand}"
+                        Content="{DynamicResource revamp}" />
+                    <Button
+                        Margin="5,0"
+                        Command="{Binding DeleteCommand}"
+                        Content="{DynamicResource delete}" />
+                </StackPanel>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

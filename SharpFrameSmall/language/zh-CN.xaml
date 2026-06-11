@@ -1,0 +1,54 @@
+﻿<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:sys="clr-namespace:System;assembly=mscorlib">
+
+    <!--  按钮与标签  -->
+    <sys:String x:Key="HomeView">主页面</sys:String>
+    <sys:String x:Key="ParameterView">参数配置</sys:String>
+    <sys:String x:Key="DebugView">调试</sys:String>
+    <sys:String x:Key="DataView">数据库</sys:String>
+    <sys:String x:Key="InfoView">生产数据</sys:String>
+    <sys:String x:Key="LogView">日志</sys:String>
+    <sys:String x:Key="SaveButton">保存</sys:String>
+    <sys:String x:Key="NewButton">新增配方</sys:String>
+    <sys:String x:Key="PopUpButton">确定</sys:String>
+    <sys:String x:Key="NewTextBlock">配方名称</sys:String>
+    <sys:String x:Key="RevampButton">修改配方名称</sys:String>
+    <sys:String x:Key="RemoveButton">删除配方</sys:String>
+    <sys:String x:Key="OpenExcelButton">打开ErrorCode</sys:String>
+    <sys:String x:Key="NewDefaultTextBlock">默认配方</sys:String>
+    <sys:String x:Key="ModelComboBoxTextBlock">配方名称：</sys:String>
+    <sys:String x:Key="ProgramFlowChartTextBlock">程序流程图</sys:String>
+    <sys:String x:Key="SystemTabItemHeader">系统参数</sys:String>
+    <sys:String x:Key="CommunicationTabItemHeader">通讯地址</sys:String>
+    <sys:String x:Key="CraftTabItemHeader">工艺参数</sys:String>
+    <sys:String x:Key="Login">登入</sys:String>
+    <sys:String x:Key="Outlogin">退出登入</sys:String>
+    <sys:String x:Key="Administration">管理</sys:String>
+    <sys:String x:Key="loading">加载中...</sys:String>
+    <sys:String x:Key="username">用户名</sys:String>
+    <sys:String x:Key="password">密码</sys:String>
+    <sys:String x:Key="newpassword">新密码</sys:String>
+    <sys:String x:Key="level">等级</sys:String>
+    <sys:String x:Key="newly">新增</sys:String>
+    <sys:String x:Key="revamp">修改</sys:String>
+    <sys:String x:Key="delete">删除</sys:String>
+    <sys:String x:Key="QRCodeInquiry">二维码查询</sys:String>
+    <sys:String x:Key="TimePeriodQuery">时间段查询</sys:String>
+    <sys:String x:Key="ExportToExcel">导出Excel</sys:String>
+    <!--  DataGrid 列头  -->
+    <sys:String x:Key="ParameterViewIDTextBlock">序号</sys:String>
+    <sys:String x:Key="ParameterViewNameTextBlock">名称</sys:String>
+    <sys:String x:Key="ParameterViewTypeTextBlock">类型</sys:String>
+    <sys:String x:Key="ParameterViewValueTextBlock">参数值</sys:String>
+    <sys:String x:Key="ParameterViewAddressTextBlock">起始地址</sys:String>
+    <sys:String x:Key="ParameterViewlengthTextBlock">长度</sys:String>
+    <sys:String x:Key="ParameterViewAddForwardTextBlock">向前添加行</sys:String>
+    <sys:String x:Key="ParameterViewAddBackwardTextBlock">向后添加行</sys:String>
+    <sys:String x:Key="ParameterViewSortTextBlock">序号排序</sys:String>
+    <sys:String x:Key="ParameterViewdeleteTextBlock">移除行</sys:String>
+    <sys:String x:Key="LogControlTimeTextBlock">时间</sys:String>
+    <sys:String x:Key="LogControllevelTextBlock">级别</sys:String>
+    <sys:String x:Key="LogControlValueTextBlock">内容</sys:String>
+</ResourceDictionary>

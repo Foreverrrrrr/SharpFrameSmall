@@ -1,0 +1,82 @@
+﻿<UserControl
+    x:Class="SharpFrameSmall.Views.ParameterDialog.NewFormulaDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
+    xmlns:prism="http://prismlibrary.com/"
+    Width="400"
+    Height="180"
+    prism:ViewModelLocator.AutoWireViewModel="True">
+    <Border Background="White" CornerRadius="10">
+        <Grid Margin="10">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="3*" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <Grid Grid.Row="0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="1.8*" />
+                </Grid.ColumnDefinitions>
+                <TextBlock
+                    Grid.Column="0"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Center"
+                    FontSize="16">
+                    <Run Text="{DynamicResource NewDefaultTextBlock}" />
+                    <Run Text="：" />
+                </TextBlock>
+                <TextBlock
+                    Grid.Row="1"
+                    Grid.Column="0"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Center"
+                    FontSize="16">
+                    <Run Text="{DynamicResource NewTextBlock}" />
+                    <Run Text="：" />
+                </TextBlock>
+                <ComboBox
+                    Grid.Row="0"
+                    Grid.Column="1"
+                    MinWidth="100"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Center"
+                    Background="White"
+                    DisplayMemberPath="Name"
+                    FontSize="15"
+                    Foreground="Black"
+                    ItemsSource="{Binding ParameterNameList}"
+                    SelectedIndex="{Binding ParameterIndexes}"
+                    SelectedValuePath="ID">
+                    <i:Interaction.Triggers>
+                        <i:EventTrigger EventName="SelectionChanged">
+                            <prism:InvokeCommandAction Command="{Binding ModelSwitching}" />
+                        </i:EventTrigger>
+                    </i:Interaction.Triggers>
+                </ComboBox>
+                <TextBox
+                    Grid.Row="1"
+                    Grid.Column="1"
+                    MinWidth="200"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Center"
+                    FontSize="15"
+                    Text="{Binding NewNameValue}" />
+            </Grid>
+            <Button
+                Grid.Row="1"
+                Height="30"
+                Margin="2"
+                Background="#FFD7D7D7"
+                BorderBrush="{x:Null}"
+                Command="{Binding ConfirmNew}"
+                Content="{DynamicResource PopUpButton}"
+                FontSize="16"
+                FontWeight="Bold" />
+        </Grid>
+    </Border>
+</UserControl>

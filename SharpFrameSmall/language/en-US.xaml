@@ -1,0 +1,54 @@
+﻿<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:sys="clr-namespace:System;assembly=mscorlib">
+
+    <!--  Buttons and Labels  -->
+    <sys:String x:Key="HomeView">Home</sys:String>
+    <sys:String x:Key="ParameterView">Parameters</sys:String>
+    <sys:String x:Key="DebugView">Debug</sys:String>
+    <sys:String x:Key="DataView">Database</sys:String>
+    <sys:String x:Key="InfoView">InfoData</sys:String>
+    <sys:String x:Key="LogView">Log</sys:String>
+    <sys:String x:Key="SaveButton">Save</sys:String>
+    <sys:String x:Key="NewTextBlock">Recipe Name</sys:String>
+    <sys:String x:Key="NewButton">Add Recipe</sys:String>
+    <sys:String x:Key="PopUpButton">OK</sys:String>
+    <sys:String x:Key="RevampButton">Rename Recipe</sys:String>
+    <sys:String x:Key="RemoveButton">Delete Recipe</sys:String>
+    <sys:String x:Key="OpenExcelButton">Open ErrorCode</sys:String>
+    <sys:String x:Key="NewDefaultTextBlock">Default Recipe</sys:String>
+    <sys:String x:Key="ModelComboBoxTextBlock">Recipe Name：</sys:String>
+    <sys:String x:Key="ProgramFlowChartTextBlock">Program Flow Chart</sys:String>
+    <sys:String x:Key="SystemTabItemHeader">System Parameters</sys:String>
+    <sys:String x:Key="CommunicationTabItemHeader">Communication Address</sys:String>
+    <sys:String x:Key="CraftTabItemHeader">Process Parameters</sys:String>
+    <sys:String x:Key="Login">Log in</sys:String>
+    <sys:String x:Key="Outlogin">Log out</sys:String>
+    <sys:String x:Key="Administration">Administration</sys:String>
+    <sys:String x:Key="loading">Loading...</sys:String>
+    <sys:String x:Key="username">User Name</sys:String>
+    <sys:String x:Key="password">Password</sys:String>
+    <sys:String x:Key="newpassword">New Password</sys:String>
+    <sys:String x:Key="level">Level</sys:String>
+    <sys:String x:Key="newly">Newly</sys:String>
+    <sys:String x:Key="revamp">Revamp</sys:String>
+    <sys:String x:Key="delete">Delete</sys:String>
+    <sys:String x:Key="QRCodeInquiry">QR Search</sys:String>
+    <sys:String x:Key="TimePeriodQuery">Time Range</sys:String>
+    <sys:String x:Key="ExportToExcel">Export Excel</sys:String>
+    <!--  DataGrid 列头  -->
+    <sys:String x:Key="ParameterViewIDTextBlock">ID</sys:String>
+    <sys:String x:Key="ParameterViewNameTextBlock">Name</sys:String>
+    <sys:String x:Key="ParameterViewTypeTextBlock">Type</sys:String>
+    <sys:String x:Key="ParameterViewValueTextBlock">Value</sys:String>
+    <sys:String x:Key="ParameterViewAddressTextBlock">Start Address</sys:String>
+    <sys:String x:Key="ParameterViewlengthTextBlock">Length</sys:String>
+    <sys:String x:Key="ParameterViewAddForwardTextBlock">Add Row Before</sys:String>
+    <sys:String x:Key="ParameterViewAddBackwardTextBlock">Add Row After</sys:String>
+    <sys:String x:Key="ParameterViewSortTextBlock">Number Order</sys:String>
+    <sys:String x:Key="ParameterViewdeleteTextBlock">Remove Row</sys:String>
+    <sys:String x:Key="LogControlTimeTextBlock">Time</sys:String>
+    <sys:String x:Key="LogControllevelTextBlock">Level</sys:String>
+    <sys:String x:Key="LogControlValueTextBlock">Message</sys:String>
+</ResourceDictionary>

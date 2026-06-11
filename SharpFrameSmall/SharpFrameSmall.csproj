@@ -1,0 +1,331 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{A667DDE1-AA88-4CCD-ABFF-C268B44991A7}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>SharpFrameSmall</RootNamespace>
+    <AssemblyName>SharpFrameSmall</AssemblyName>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <WarningLevel>4</WarningLevel>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
+    <PublishUrl>publish\</PublishUrl>
+    <Install>true</Install>
+    <InstallFrom>Disk</InstallFrom>
+    <UpdateEnabled>false</UpdateEnabled>
+    <UpdateMode>Foreground</UpdateMode>
+    <UpdateInterval>7</UpdateInterval>
+    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
+    <UpdatePeriodically>false</UpdatePeriodically>
+    <UpdateRequired>false</UpdateRequired>
+    <MapFileExtensions>true</MapFileExtensions>
+    <ApplicationRevision>0</ApplicationRevision>
+    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
+    <UseApplicationTrust>false</UseApplicationTrust>
+    <BootstrapperEnabled>true</BootstrapperEnabled>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>x64</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>
+    </DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <DocumentationFile>bin\Debug\SharpFrameSmall.xml</DocumentationFile>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>x64</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="EPPlus, Version=4.5.3.3, Culture=neutral, PublicKeyToken=ea159fdaa78159a1, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\Debug\EPPlus.dll</HintPath>
+    </Reference>
+    <Reference Include="log4net, Version=2.0.17.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\Debug\log4net.dll</HintPath>
+    </Reference>
+    <Reference Include="MvCameraControl.Net, Version=3.4.0.1, Culture=neutral, PublicKeyToken=52fddfb3f94be800, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>Lib\MvCameraControl.Net.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\Debug\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.ServiceModel" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xaml">
+      <RequiredTargetFramework>4.0</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="WindowsBase" />
+    <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
+  </ItemGroup>
+  <ItemGroup>
+    <ApplicationDefinition Include="App.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </ApplicationDefinition>
+    <Compile Include="Common\Camera\Haikang.cs" />
+    <Compile Include="Common\Commumication\AsyncSharpTcpClient.cs" />
+    <Compile Include="Common\Commumication\AsyncSharpTcpServer.cs" />
+    <Compile Include="Common\AutoStartHelper.cs" />
+    <Compile Include="Common\ExcelDialogHelper.cs" />
+    <Compile Include="Common\ExcelTool.cs" />
+    <Compile Include="Common\Geometry.cs" />
+    <Compile Include="Common\Commumication\Http_Client.cs" />
+    <Compile Include="Common\ModbusTCP\ModbusTCPClientPlus.cs" />
+    <Compile Include="Common\ModbusTCP\Package.cs" />
+    <Compile Include="Common\SFCS\SFCSClient.cs" />
+    <Compile Include="Common\ProductionInformation.cs" />
+    <Compile Include="Common\SQL\SQL_Server.cs" />
+    <Compile Include="Common\SQL\SQL_Sqlite.cs" />
+    <Compile Include="Common\UserManagement.cs" />
+    <Compile Include="language\LocalizationService.cs" />
+    <Compile Include="Log4Net\Log.cs" />
+    <Compile Include="Logic\AutoMain\Auto.cs" />
+    <Compile Include="Logic\Base\DataConfigurationBase.cs" />
+    <Compile Include="Logic\Base\Exchange.cs" />
+    <Compile Include="Logic\Base\ProductionThreadBase.cs" />
+    <Compile Include="Logic\Base\ProcessBase.cs" />
+    <Compile Include="LogsFolder\ErrorCode.cs" />
+    <Compile Include="LogsFolder\LogsEventJson.cs" />
+    <Compile Include="LogsFolder\LogsManage.cs" />
+    <Compile Include="LogsFolder\LogsProductJson.cs" />
+    <Compile Include="LogsFolder\LogsRecipeJson.cs" />
+    <Compile Include="LogsFolder\LogsResultJson.cs" />
+    <Compile Include="LogsFolder\PLC_ModbusTCP.cs" />
+    <Compile Include="LogsFolder\ScrewdriverJson.cs" />
+    <Compile Include="Structure\Parameter\AttdefParameter.cs" />
+    <Compile Include="Structure\Parameter\LabelParameter.cs" />
+    <Compile Include="Structure\Parameter\ModbusParameter.cs" />
+    <Compile Include="Structure\Parameter\Parameter Structure\IParameter.cs" />
+    <Compile Include="Structure\Parameter\Parameter Structure\ParameterBase.cs" />
+    <Compile Include="Structure\Parameter\Parameter Structure\ParameterField.cs" />
+    <Compile Include="Structure\Parameter\Parameter Structure\RangeObservableCollection.cs" />
+    <Compile Include="Structure\Parameter\Parameter Structure\ValueParameter.cs" />
+    <Compile Include="Structure\Parameter\ParameterConfig.cs" />
+    <Compile Include="Structure\Parameter\ParameterJsonTool.cs" />
+    <Compile Include="Structure\Parameter\ParameterStore.cs" />
+    <Compile Include="Structure\Parameter\SystemParameter.cs" />
+    <Compile Include="Update\CheckUpdate.cs" />
+    <Compile Include="ViewModels\DataBaseViewModel.cs" />
+    <Compile Include="ViewModels\MotionDebugViewModel.cs" />
+    <Compile Include="ViewModels\ParameterDialog\ErrorCodeDialogViewModel.cs" />
+    <Compile Include="ViewModels\HomeViewModel.cs" />
+    <Compile Include="ViewModels\LogControlViewModel.cs" />
+    <Compile Include="ViewModels\ParameterDialog\NewFormulaDialogViewModel.cs" />
+    <Compile Include="ViewModels\ParameterViewModel.cs" />
+    <Compile Include="ViewModels\Structure\PermissionType.cs" />
+    <Compile Include="ViewModels\ParameterDialog\SystemLogInViewModel.cs" />
+    <Compile Include="ViewModels\ParameterDialog\UserDialogViewModel.cs" />
+    <Compile Include="Views\DataBaseView.xaml.cs">
+      <DependentUpon>DataBaseView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\HomeView.xaml.cs">
+      <DependentUpon>HomeView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\LogControl.xaml.cs">
+      <DependentUpon>LogControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\MotionDebugView.xaml.cs">
+      <DependentUpon>MotionDebugView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\ParameterDialog\ErrorCodeDialog.xaml.cs">
+      <DependentUpon>ErrorCodeDialog.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\ParameterDialog\NewFormulaDialog.xaml.cs">
+      <DependentUpon>NewFormulaDialog.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\ParameterDialog\UserDialog.xaml.cs">
+      <DependentUpon>UserDialog.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\ParameterView.xaml.cs">
+      <DependentUpon>ParameterView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\SharpStyle\AxisControl\AxisControl.cs" />
+    <Compile Include="Views\SharpStyle\AxisControl\AxisMonitor.cs" />
+    <Compile Include="Views\SharpStyle\AxisControl\AxisViewModel.cs" />
+    <Compile Include="Views\SharpStyle\IOControl\IOControl.cs" />
+    <Compile Include="Views\SharpStyle\IOControl\IOViewModel.cs" />
+    <Compile Include="Views\SharpStyle\Notification\GenericNotification.cs" />
+    <Compile Include="Views\SharpStyle\Notification\NotificationTemplateSelector.cs" />
+    <Compile Include="Views\SharpStyle\Notification\Notification_Error.cs" />
+    <Compile Include="Views\SharpStyle\Notification\Notification_Fatal.cs" />
+    <Compile Include="Views\SharpStyle\Notification\Notification_Info.cs" />
+    <Compile Include="Views\SharpStyle\Notification\Notification_Warning.cs" />
+    <Compile Include="Views\SharpStyle\Notification\TimedNotification.cs" />
+    <Compile Include="Views\SharpStyle\OpenVision\DisplayVision.cs" />
+    <Compile Include="Views\SharpStyle\OpenVision\RelayCommand.cs" />
+    <Compile Include="Views\ParameterDialog\SystemLogInView.xaml.cs">
+      <DependentUpon>SystemLogInView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\SharpStyle\ParameterDataGrid\ParameterDataGrid.cs" />
+    <Page Include="language\en-US.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="language\vi-VN.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="language\zh-CN.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="language\zh-TW.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Themes\Generic.xaml">
+      <SubType>Designer</SubType>
+      <Generator>XamlIntelliSenseFileGenerator</Generator>
+    </Page>
+    <Page Include="Views\DataBaseView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\HomeView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\LogControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\MainWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Compile Include="App.xaml.cs">
+      <DependentUpon>App.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ViewModels\MainWindowViewModel.cs" />
+    <Compile Include="Views\MainWindow.xaml.cs">
+      <DependentUpon>MainWindow.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Page Include="Views\MotionDebugView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\ParameterDialog\ErrorCodeDialog.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\ParameterDialog\NewFormulaDialog.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\ParameterDialog\UserDialog.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\ParameterView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\ParameterDialog\SystemLogInView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Properties\AssemblyInfo.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+    </Compile>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <None Include="app.config" />
+    <None Include="Log4Net\log4net.config">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+    <None Include="Structure\Parameter\Parameter.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="MaterialDesignThemes">
+      <Version>4.8.0</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf">
+      <Version>1.1.135</Version>
+    </PackageReference>
+    <PackageReference Include="Prism.DryIoc" Version="8.0.0.1909" />
+    <PackageReference Include="System.Data.SQLite">
+      <Version>1.0.119</Version>
+    </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Common\Motion Control\" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ExportNuGet.ps1" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Lib\EPPlus.dll" />
+    <Content Include="Lib\log4net.dll" />
+    <Content Include="Lib\MvCameraControl.Net.dll" />
+    <Content Include="Lib\Newtonsoft.Json.dll" />
+  </ItemGroup>
+  <ItemGroup>
+    <WCFMetadata Include="Connected Services\" />
+  </ItemGroup>
+  <ItemGroup>
+    <BootstrapperPackage Include=".NETFramework,Version=v4.8">
+      <Visible>False</Visible>
+      <ProductName>Microsoft .NET Framework 4.8 %28x86 和 x64%29</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>

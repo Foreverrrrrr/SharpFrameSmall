@@ -54,7 +54,6 @@ namespace SharpFrameSmall.Logic.AutoMain
 
         protected override void ThreadRestartEvent(string class_na, ProcessBase thread, ThreadAbortException ex)
         {
-
         }
     }
 }

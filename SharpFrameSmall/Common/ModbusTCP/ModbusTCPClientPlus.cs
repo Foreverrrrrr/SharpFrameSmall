@@ -134,13 +134,56 @@ namespace SharpFrameSmall.Common.Modbus
         private const int MAX_REGISTERS_PER_READ = 125;
         private const int RECEIVE_BUFFER_SIZE = 1024 * 64;
         private const int DEFAULT_TRIGGER_POLL_INTERVAL_MS = 100;
-        private const int DEFAULT_HEARTBEAT_INTERVAL_MS = 3000;
+        private const int DEFAULT_HEARTBEAT_INTERVAL_MS = 1000;
         private const int DEFAULT_RECONNECT_INTERVAL_MS = 3000;
         private const int DEFAULT_MAX_RECONNECT_ATTEMPTS = 0;
+        private const int DEFAULT_THEN_DELAY_MS = 30;
 
         #endregion
 
         #region 触发器配置类
+
+        /// <summary>
+        /// 连带读取配置
+        /// </summary>
+        public class LinkedReadConfig
+        {
+            /// <summary>寄存器地址</summary>
+            public string Address { get; set; }
+
+            /// <summary>数据类型</summary>
+            public TriggerDataType DataType { get; set; }
+
+            /// <summary>读取长度（数组/字符串时使用，默认1）</summary>
+            public int Length { get; set; } = 1;
+
+            /// <summary>标签</summary>
+            public string Name { get; set; }
+        }
+
+        /// <summary>
+        /// 连带读取结果
+        /// </summary>
+        public class LinkedReadResult
+        {
+            /// <summary>寄存器地址</summary>
+            public string Address { get; set; }
+
+            /// <summary>标签名</summary>
+            public string Name { get; set; }
+
+            /// <summary>数据类型</summary>
+            public TriggerDataType DataType { get; set; }
+
+            /// <summary>读取到的值</summary>
+            public object Value { get; set; }
+
+            /// <summary>是否读取成功</summary>
+            public bool IsSuccess { get; set; }
+
+            /// <summary>失败时的错误信息</summary>
+            public string ErrorMessage { get; set; }
+        }
 
         /// <summary>
         /// 触发器配置
@@ -198,19 +241,60 @@ namespace SharpFrameSmall.Common.Modbus
             public object Tag { get; set; }
 
             /// <summary>
-            /// 独立的触发回调
+            /// 触发回调
             /// </summary>
             public Action<TriggerEventArgs> Callback { get; set; }
 
             /// <summary>
-            /// 内部使用：上一次读取的值
+            /// Callback完成操作委托
+            /// </summary>
+            public Action<ModbusTCPClientPlus> ThenAction { get; set; }
+
+            /// <summary>
+            /// 连带读取列表
+            /// </summary>
+            public List<LinkedReadConfig> LinkedReads { get; set; } = new List<LinkedReadConfig>();
+
+            /// <summary>
+            /// 上一次读取的值
             /// </summary>
             internal object LastValue { get; set; }
 
             /// <summary>
-            /// 内部使用：是否已经触发过
+            /// 是否已经触发过
             /// </summary>
             internal bool HasTriggered { get; set; }
+
+            /// <summary>
+            /// Callback 执行完成回调
+            /// </summary>
+            /// <param name="thenAction"> ModbusTCPClientPlus </param>
+            /// <returns></returns>
+            public TriggerConfig Then(Action<ModbusTCPClientPlus> thenAction)
+            {
+                this.ThenAction = thenAction;
+                return this;
+            }
+
+            /// <summary>
+            /// 添加连带读取地址，触发满足条件自动读取该地址
+            /// </summary>
+            /// <param name="address">寄存器地址</param>
+            /// <param name="dataType">数据类型</param>
+            /// <param name="name">标签，回调识别</param>
+            /// <param name="length">数组/字符串长度</param>
+            /// <returns></returns>
+            public TriggerConfig Link(string address, TriggerDataType dataType, string name = null, int length = 1)
+            {
+                LinkedReads.Add(new LinkedReadConfig
+                {
+                    Address = address,
+                    DataType = dataType,
+                    Name = name ?? address,
+                    Length = length
+                });
+                return this;
+            }
         }
 
         /// <summary>
@@ -218,6 +302,11 @@ namespace SharpFrameSmall.Common.Modbus
         /// </summary>
         public class TriggerEventArgs : EventArgs
         {
+            /// <summary>
+            /// ModbusTCPClientPlus 实例
+            /// </summary>
+            public ModbusTCPClientPlus Client { get; set; }
+
             /// <summary>
             /// 触发器配置
             /// </summary>
@@ -247,6 +336,70 @@ namespace SharpFrameSmall.Common.Modbus
             /// 失败错误信息
             /// </summary>
             public string ErrorMessage { get; set; }
+
+            /// <summary>
+            /// 连带读取结果列表
+            /// </summary>
+            public List<LinkedReadResult> LinkedValues { get; set; }
+
+            /// <summary>
+            /// Get LinkedValues
+            /// </summary>
+            /// <typeparam name="T">目标类型</typeparam>
+            /// <param name="nameOrAddress">Link 时设置的 Name，或寄存器地址</param>
+            /// <returns></returns>
+            public T GetLinkedValue<T>(string nameOrAddress)
+            {
+                if (LinkedValues == null || string.IsNullOrEmpty(nameOrAddress))
+                    return default;
+
+                var item = LinkedValues.FirstOrDefault(v =>
+                    string.Equals(v.Name, nameOrAddress, StringComparison.OrdinalIgnoreCase))
+                ?? LinkedValues.FirstOrDefault(v =>
+                    string.Equals(v.Address, nameOrAddress, StringComparison.OrdinalIgnoreCase));
+                if (item == null || !item.IsSuccess || item.Value == null)
+                    return default;
+                try
+                {
+                    return (T)Convert.ChangeType(item.Value, typeof(T));
+                }
+                catch
+                {
+                    return default;
+                }
+            }
+
+            /// <summary>
+            /// 获取连带读取值
+            /// </summary>
+            /// <typeparam name="T">目标类型</typeparam>
+            /// <param name="nameOrAddress">Link 时设置的 Name，或寄存器地址</param>
+            /// <param name="value">输出值</param>
+            /// <returns>是否成功获取</returns>
+            public bool TryGetLinkedValue<T>(string nameOrAddress, out T value)
+            {
+                value = default;
+                if (LinkedValues == null || string.IsNullOrEmpty(nameOrAddress))
+                    return false;
+
+                var item = LinkedValues.FirstOrDefault(v =>
+                    string.Equals(v.Name, nameOrAddress, StringComparison.OrdinalIgnoreCase))
+                ?? LinkedValues.FirstOrDefault(v =>
+                    string.Equals(v.Address, nameOrAddress, StringComparison.OrdinalIgnoreCase));
+
+                if (item == null || !item.IsSuccess || item.Value == null)
+                    return false;
+
+                try
+                {
+                    value = (T)Convert.ChangeType(item.Value, typeof(T));
+                    return true;
+                }
+                catch
+                {
+                    return false;
+                }
+            }
         }
 
         #endregion
@@ -356,6 +509,11 @@ namespace SharpFrameSmall.Common.Modbus
         public int TriggerPollInterval { get; set; } = DEFAULT_TRIGGER_POLL_INTERVAL_MS;
 
         /// <summary>
+        /// Callback 完成后到执行 Then 之间的延迟，默认20
+        /// </summary>
+        public int ThenDelayMs { get; set; } = DEFAULT_THEN_DELAY_MS;
+
+        /// <summary>
         /// 心跳检测读取的 Modbus 地址（默认 "0"）
         /// </summary>
         public string HeartbeatAddress { get; set; } = "0";
@@ -444,8 +602,6 @@ namespace SharpFrameSmall.Common.Modbus
         /// <param name="targetPort">服务器端口</param>
         /// <param name="order">字节序</param>
         /// <remarks>
-        /// 注意：此构造函数会异步启动连接，构造完成时连接可能尚未建立。
-        /// 建议使用默认构造函数后手动调用 ConnectAsync 以获取连接结果。
         /// </remarks>
         public ModbusTCPClientPlus(string targetIP, int targetPort, ByteOrder order) : this()
         {
@@ -583,7 +739,7 @@ namespace SharpFrameSmall.Common.Modbus
         }
 
         /// <summary>
-        /// 启动心跳检测（读取 HeartbeatAddress 来判断连接是否存活）
+        /// 启动心跳检测
         /// </summary>
         private void StartHeartbeat()
         {
@@ -593,7 +749,6 @@ namespace SharpFrameSmall.Common.Modbus
 
             _heartbeatCts = new CancellationTokenSource();
             var token = _heartbeatCts.Token;
-
             _heartbeatTask = Task.Run(async () =>
             {
                 while (!token.IsCancellationRequested && !_isDisposed && !_userRequestedDisconnect)
@@ -604,7 +759,7 @@ namespace SharpFrameSmall.Common.Modbus
                         if (token.IsCancellationRequested || _isDisposed || _userRequestedDisconnect)
                             break;
 
-                        bool alive = await HeartbeatReadAsync(token).ConfigureAwait(false);
+                        bool alive = await HeartbeatToggleAsync(token).ConfigureAwait(false);
                         if (!alive)
                         {
                             OnConnectionLost();
@@ -630,38 +785,43 @@ namespace SharpFrameSmall.Common.Modbus
         }
 
         /// <summary>
-        /// 心跳专用 Modbus 读取：读取 HeartbeatAddress 的 1 个点/寄存器。
-        /// 成功返回 true，失败/异常返回 false。不触发 InteractionEvent。
+        /// 心跳读写：先读 HeartbeatAddress 当前值，再写入反转值，验证双向通信。
+        /// 复用已有高层读写方法，自动处理字节序、异常、事务ID。
         /// </summary>
-        private async Task<bool> HeartbeatReadAsync(CancellationToken token)
+        private async Task<bool> HeartbeatToggleAsync(CancellationToken token)
         {
+            token.ThrowIfCancellationRequested();
             try
             {
-                if (!IsConnected) return false;
-
+                if (!IsConnected || _isDisposed) return false;
                 var fc = HeartbeatFunctionCode;
-
-                var package = new Package<ushort> { Address = HeartbeatAddress };
-                package.SendBuff = BuildReadMessages(fc, HeartbeatAddress, 1);
-
-                await _sendLock.WaitAsync(token).ConfigureAwait(false);
-                try
+                bool readOk;
+                object currentValue;
+                if (fc == 0x01 || fc == 0x02)
                 {
-                    var client = _tcpClient;
-                    if (client == null || !client.Connected || _isDisposed) return false;
-
-                    var stream = client.GetStream();
-                    for (int i = 0; i < package.SendBuff.Length; i++)
-                    {
-                        await stream.WriteAsync(package.SendBuff[i], 0, package.SendBuff[i].Length, token).ConfigureAwait(false);
-                        int bytesRead = await ReadModbusResponseAsync(stream, token).ConfigureAwait(false);
-                        if (bytesRead < 8) return false;
-                    }
-                    return true;
+                    var r = await ReadBoolAsync(HeartbeatAddress, fc).ConfigureAwait(false);
+                    readOk = r.IsSuccess;
+                    currentValue = r.Value;
                 }
-                finally
+                else
                 {
-                    _sendLock.Release();
+                    var r = await ReadUInt16Async(HeartbeatAddress, fc).ConfigureAwait(false);
+                    readOk = r.IsSuccess;
+                    currentValue = r.Value;
+                }
+
+                if (!readOk) return false;
+
+                if (fc == 0x01 || fc == 0x02)
+                {
+                    bool cur = currentValue is bool b && b;
+                    return (await WriteBoolAsync(HeartbeatAddress, !cur).ConfigureAwait(false)).IsSuccess;
+                }
+                else
+                {
+                    ushort cur = currentValue is ushort u ? u : (ushort)0;
+                    ushort inv = cur == 0 ? (ushort)1 : (ushort)0;
+                    return (await WriteUInt16Async(HeartbeatAddress, inv).ConfigureAwait(false)).IsSuccess;
                 }
             }
             catch (OperationCanceledException)
@@ -676,7 +836,7 @@ namespace SharpFrameSmall.Common.Modbus
 
         /// <summary>
         /// 异步读取完整的 Modbus TCP 响应帧。
-        /// 先精确读取 6 字节 MBAP 头，再按 Length 字段读完剩余字节，彻底解决 TCP 粘包/拆包问题。
+        /// 先读取 6 字节 MBAP 头，再按 Length 字段读完剩余字节
         /// </summary>
         private async Task<int> ReadModbusResponseAsync(NetworkStream stream, CancellationToken token = default)
         {
@@ -686,8 +846,6 @@ namespace SharpFrameSmall.Common.Modbus
                 int n = await stream.ReadAsync(_readBuffer, totalRead, 6 - totalRead, token).ConfigureAwait(false);
                 if (n == 0)
                 {
-                    // .NET Framework 上 CancellationToken 取消时 NetworkStream.ReadAsync
-                    // 会关闭 socket 并返回 0，而非抛出 OperationCanceledException
                     token.ThrowIfCancellationRequested();
                     throw new IOException("连接已断开，读取 MBAP 头失败");
                 }
@@ -711,11 +869,11 @@ namespace SharpFrameSmall.Common.Modbus
 
         /// <summary>
         /// 同步读取完整的 Modbus TCP 响应帧。
-        /// 先精确读取 6 字节 MBAP 头，再按 Length 字段读完剩余字节，彻底解决 TCP 粘包/拆包问题。
+        /// 先读取 6 字节 MBAP 头，再按 Length 字段读完剩余字节
         /// </summary>
         private int ReadModbusResponseSync(NetworkStream stream)
         {
-            // 读取 6 字节 MBAP 头
+            // 读取MBAP 
             int totalRead = 0;
             while (totalRead < 6)
             {
@@ -772,7 +930,7 @@ namespace SharpFrameSmall.Common.Modbus
                 OnDisconnection(ex);
             }
             CloseExistingConnection();
-            // 取消旧的重连令牌，防止 ConnectWithRetryAsync 中的 Task.Delay 阻塞 Dispose
+            // 取消旧的重连令牌
             try { _reconnectCts?.Cancel(); } catch { }
             if (AutoReconnect && !_isDisposed && !_userRequestedDisconnect)
             {
@@ -827,7 +985,7 @@ namespace SharpFrameSmall.Common.Modbus
                 return package;
             }
 
-            // 为异步读取创建超时令牌：结合全局取消令牌 + ReadTimeout
+            // 异步读取超时令牌
             CancellationTokenSource linkedCts = null;
             try
             {
@@ -919,14 +1077,14 @@ namespace SharpFrameSmall.Common.Modbus
                 }
                 catch (OperationCanceledException) when (!_cancellationTokenSource.IsCancellationRequested)
                 {
-                    // ReadTimeout 超时（非 Dispose 取消）
+                    // ReadTimeout超时
                     package.IsSuccess = false;
                     package.ErrorMessage = $"读取超时({ReadTimeout}ms)";
                     OnConnectionLost();
                 }
                 catch (OperationCanceledException)
                 {
-                    // Dispose 主动取消
+                    // Dispose取消
                     package.IsSuccess = false;
                     package.ErrorMessage = "操作已取消";
                 }
@@ -1139,7 +1297,7 @@ namespace SharpFrameSmall.Common.Modbus
             message[2] = 0; // Protocol ID 高字节
             message[3] = 0; // Protocol ID 低字节
             message[4] = 0; // Length 高字节
-            message[5] = 6; // Length /*低字节*/
+            message[5] = 6; // Length 低字节
             message[6] = (byte)StationNumber;
             message[7] = function;
             message[8] = (byte)(addr >> 8);
@@ -1330,9 +1488,9 @@ namespace SharpFrameSmall.Common.Modbus
 
         /// <summary>
         /// 转换单个字的字节序
-        /// <para>ABCD（大端序）：线序 [01,02,03,04] — 高字在前，字内高字节在前（如 Siemens、标准Modbus）</para>
+        /// <para>ABCD（大端序）：线序 [01,02,03,04] — 高字在前，字内高字节在前</para>
         /// <para>BADC（字节交换）：线序 [02,01,04,03] — 高字在前，字内低字节在前</para>
-        /// <para>CDAB（字交换序）：线序 [03,04,01,02] — 低字在前，字内高字节在前（如 Mitsubishi、Omron 等PLC常用）</para>
+        /// <para>CDAB（字交换序）：线序 [03,04,01,02] — 低字在前，字内高字节在前</para>
         /// <para>DCBA（小端序）：线序 [04,03,02,01] — 低字在前，字内低字节在前</para>
         /// </summary>
         private static void ConvertSingleWordByteOrder(byte[] source, byte[] destination, int offset, int wordLength, ByteOrder byteOrder)
@@ -1434,7 +1592,7 @@ namespace SharpFrameSmall.Common.Modbus
         {
             try
             {
-                DisconnectionEvent?.Invoke(DateTime.Now, TargetIP ?? "", TargetPort, ex);
+                DisconnectionEvent?.Invoke(DateTime.Now, TargetIP ?? string.Empty, TargetPort, ex);
             }
             catch (Exception e)
             {
@@ -1449,7 +1607,7 @@ namespace SharpFrameSmall.Common.Modbus
         {
             try
             {
-                SuccessfulConnectEvent?.Invoke(DateTime.Now, TargetIP ?? "", TargetPort);
+                SuccessfulConnectEvent?.Invoke(DateTime.Now, TargetIP ?? string.Empty, TargetPort);
             }
             catch (Exception e)
             {
@@ -3809,7 +3967,17 @@ namespace SharpFrameSmall.Common.Modbus
         /// </summary>
         public Package<string> WriteString(string address, string value, int maxLength)
         {
+            var stringBytes = Encoding.ASCII.GetBytes(value ?? string.Empty);
             return WriteStringSync(address, value, maxLength);
+        }
+
+        /// <summary>
+        /// 同步写入字符串
+        /// </summary>
+        public Package<string> WriteString(string address, string value)
+        {
+            var stringBytes = Encoding.ASCII.GetBytes(value ?? string.Empty);
+            return WriteStringSync(address, value, stringBytes.Length);
         }
 
         /// <summary>
@@ -3879,6 +4047,7 @@ namespace SharpFrameSmall.Common.Modbus
         /// <returns>触发器ID</returns>
         public string AddTrigger(TriggerConfig config)
         {
+            ThrowIfDisposed();
             if (config == null)
                 throw new ArgumentNullException(nameof(config));
 
@@ -4014,7 +4183,7 @@ namespace SharpFrameSmall.Common.Modbus
                 if (trigger != null)
                 {
                     trigger.IsEnabled = enabled;
-                    trigger.HasTriggered = false; // 重置触发状态
+                    trigger.HasTriggered = false; // 重置触发
                     return true;
                 }
             }
@@ -4242,7 +4411,6 @@ namespace SharpFrameSmall.Common.Modbus
                 }
                 if (!isSuccess)
                 {
-                    // 仅在已连接状态下触发失败事件，避免断线期间每个轮询周期都产生无意义事件
                     if (IsConnected)
                     {
                         OnTriggerEvent(new TriggerEventArgs
@@ -4262,6 +4430,16 @@ namespace SharpFrameSmall.Common.Modbus
                 if (shouldTrigger && !trigger.HasTriggered)
                 {
                     trigger.HasTriggered = true;
+                    List<LinkedReadResult> linkedValues = null;
+                    if (trigger.LinkedReads?.Count > 0)
+                    {
+                        linkedValues = new List<LinkedReadResult>();
+                        var snapshot = trigger.LinkedReads.ToList();
+                        foreach (var link in snapshot)
+                        {
+                            linkedValues.Add(await ReadLinkedValueAsync(link).ConfigureAwait(false));
+                        }
+                    }
 
                     OnTriggerEvent(new TriggerEventArgs
                     {
@@ -4269,7 +4447,8 @@ namespace SharpFrameSmall.Common.Modbus
                         CurrentValue = currentValue,
                         PreviousValue = trigger.LastValue,
                         TriggerTime = DateTime.Now,
-                        IsSuccess = true
+                        IsSuccess = true,
+                        LinkedValues = linkedValues
                     });
                 }
                 else if (!shouldTrigger)
@@ -4283,6 +4462,107 @@ namespace SharpFrameSmall.Common.Modbus
             {
                 System.Diagnostics.Debug.WriteLine($"Check trigger error: {ex.Message}");
             }
+        }
+
+        /// <summary>
+        /// 按数据类型读取一个连带地址
+        /// </summary>
+        private async Task<LinkedReadResult> ReadLinkedValueAsync(LinkedReadConfig link)
+        {
+            var result = new LinkedReadResult
+            {
+                Address = link.Address,
+                Name = link.Name,
+                DataType = link.DataType
+            };
+
+            try
+            {
+                switch (link.DataType)
+                {
+                    case TriggerDataType.Bit:
+                        var bitR = await ReadBitASync(link.Address).ConfigureAwait(false);
+                        result.IsSuccess = bitR.IsSuccess;
+                        result.ErrorMessage = bitR.ErrorMessage;
+                        if (bitR.IsSuccess) result.Value = bitR.Value;
+                        break;
+
+                    case TriggerDataType.Bool:
+                        var boolR = await ReadBoolAsync(link.Address).ConfigureAwait(false);
+                        result.IsSuccess = boolR.IsSuccess;
+                        result.ErrorMessage = boolR.ErrorMessage;
+                        if (boolR.IsSuccess) result.Value = boolR.Value;
+                        break;
+
+                    case TriggerDataType.Int16:
+                        var i16R = await ReadInt16Async(link.Address).ConfigureAwait(false);
+                        result.IsSuccess = i16R.IsSuccess;
+                        result.ErrorMessage = i16R.ErrorMessage;
+                        if (i16R.IsSuccess) result.Value = i16R.Value;
+                        break;
+
+                    case TriggerDataType.UInt16:
+                        var u16R = await ReadUInt16Async(link.Address).ConfigureAwait(false);
+                        result.IsSuccess = u16R.IsSuccess;
+                        result.ErrorMessage = u16R.ErrorMessage;
+                        if (u16R.IsSuccess) result.Value = u16R.Value;
+                        break;
+
+                    case TriggerDataType.Int32:
+                        var i32R = await ReadInt32Async(link.Address).ConfigureAwait(false);
+                        result.IsSuccess = i32R.IsSuccess;
+                        result.ErrorMessage = i32R.ErrorMessage;
+                        if (i32R.IsSuccess) result.Value = i32R.Value;
+                        break;
+
+                    case TriggerDataType.UInt32:
+                        var u32R = await ReadUInt32Async(link.Address).ConfigureAwait(false);
+                        result.IsSuccess = u32R.IsSuccess;
+                        result.ErrorMessage = u32R.ErrorMessage;
+                        if (u32R.IsSuccess) result.Value = u32R.Value;
+                        break;
+
+                    case TriggerDataType.Int64:
+                        var i64R = await ReadInt64Async(link.Address).ConfigureAwait(false);
+                        result.IsSuccess = i64R.IsSuccess;
+                        result.ErrorMessage = i64R.ErrorMessage;
+                        if (i64R.IsSuccess) result.Value = i64R.Value;
+                        break;
+
+                    case TriggerDataType.Float:
+                        var fR = await ReadFloatAsync(link.Address).ConfigureAwait(false);
+                        result.IsSuccess = fR.IsSuccess;
+                        result.ErrorMessage = fR.ErrorMessage;
+                        if (fR.IsSuccess) result.Value = fR.Value;
+                        break;
+
+                    case TriggerDataType.Double:
+                        var dR = await ReadDoubleAsync(link.Address).ConfigureAwait(false);
+                        result.IsSuccess = dR.IsSuccess;
+                        result.ErrorMessage = dR.ErrorMessage;
+                        if (dR.IsSuccess) result.Value = dR.Value;
+                        break;
+
+                    case TriggerDataType.String:
+                        var sR = await ReadStringAsync(link.Address, link.Length).ConfigureAwait(false);
+                        result.IsSuccess = sR.IsSuccess;
+                        result.ErrorMessage = sR.ErrorMessage;
+                        if (sR.IsSuccess) result.Value = sR.Value;
+                        break;
+
+                    default:
+                        result.IsSuccess = false;
+                        result.ErrorMessage = $"不支持的数据类型: {link.DataType}";
+                        break;
+                }
+            }
+            catch (Exception ex)
+            {
+                result.IsSuccess = false;
+                result.ErrorMessage = ex.Message;
+            }
+
+            return result;
         }
 
         /// <summary>
@@ -4372,29 +4652,54 @@ namespace SharpFrameSmall.Common.Modbus
         /// </summary>
         private void OnTriggerEvent(TriggerEventArgs e)
         {
-            // 触发回调
-            var callback = e.Trigger?.Callback;
-            if (callback != null)
+            if (_isDisposed) return;
+
+            e.Client = this;
+            var trigger = e.Trigger;
+            var callback = trigger?.Callback;
+            var thenAction = trigger?.ThenAction;
+            if (callback != null || thenAction != null)
             {
-                Task.Run(() =>
+                Task.Run(async () =>
                 {
-                    try
+                    // 回调
+                    if (!_isDisposed && callback != null)
                     {
-                        callback(e);
+                        try
+                        {
+                            callback(e);
+                        }
+                        catch (Exception ex)
+                        {
+                            System.Diagnostics.Debug.WriteLine($"Trigger [{trigger?.Name}] callback error: {ex.Message}");
+                        }
                     }
-                    catch (Exception ex)
+
+                    // Then
+                    if (!_isDisposed && thenAction != null)
                     {
-                        System.Diagnostics.Debug.WriteLine($"Trigger [{e.Trigger?.Name}] callback error: {ex.Message}");
+                        try
+                        {
+                            if (ThenDelayMs > 0)
+                                await Task.Delay(ThenDelayMs).ConfigureAwait(false);
+                            if (!_isDisposed)
+                                thenAction(this);
+                        }
+                        catch (Exception ex)
+                        {
+                            System.Diagnostics.Debug.WriteLine($"Trigger [{trigger?.Name}] Then error: {ex.Message}");
+                        }
                     }
                 });
             }
 
-            // 2. 触发全局事件
+            // 全局事件
             var handler = TriggerEvent;
             if (handler != null)
             {
                 Task.Run(() =>
                 {
+                    if (_isDisposed) return;
                     try
                     {
                         handler(this, e);

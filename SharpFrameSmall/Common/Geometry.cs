@@ -950,7 +950,6 @@ namespace SharpFrameSmall.Common
             return points;
         }
 
-
         /// <summary>
         /// 直线插补误差计算
         /// </summary>

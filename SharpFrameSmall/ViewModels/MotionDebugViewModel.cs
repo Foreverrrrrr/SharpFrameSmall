@@ -6,10 +6,8 @@ using Prism.Services.Dialogs;
 using SharpFrameSmall.Common.Commumication;
 using SharpFrameSmall.Views.SharpStyle;
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Security.Cryptography;
 using System.Windows.Threading;
 
 namespace SharpFrameSmall.ViewModels

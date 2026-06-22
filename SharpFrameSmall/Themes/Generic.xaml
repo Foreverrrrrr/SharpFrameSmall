@@ -2454,10 +2454,6 @@
         </Setter>
     </Style>
 
-    <!--
-        IOOutputMonitor — DO 输出状态显示与控制控件
-        磁贴布局：圆点 + 名称 + 拨动开关，WrapPanel 自动换行
-    -->
     <Style TargetType="{x:Type local:IOOutputMonitor}">
         <Setter Property="Background" Value="#FF1E1E1E" />
         <Setter Property="BorderBrush" Value="#FF3A3A3A" />

@@ -138,6 +138,8 @@
     <Compile Include="Structure\Parameter\ParameterStore.cs" />
     <Compile Include="Structure\Parameter\SystemParameter.cs" />
     <Compile Include="Update\CheckUpdate.cs" />
+    <Compile Include="Update\UpdateListener.cs" />
+    <Compile Include="Update\UpdateTcpClient.cs" />
     <Compile Include="ViewModels\DataBaseViewModel.cs" />
     <Compile Include="ViewModels\MotionDebugViewModel.cs" />
     <Compile Include="ViewModels\ParameterDialog\ErrorCodeDialogViewModel.cs" />

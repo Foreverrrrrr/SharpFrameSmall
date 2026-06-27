@@ -5,5 +5,8 @@
     <Setting Name="Language" Type="System.String" Scope="User">
       <Value Profile="(Default)">zh-CN</Value>
     </Setting>
+    <Setting Name="UpdateServerUrl" Type="System.String" Scope="User">
+      <Value Profile="(Default)">http://127.0.0.1:12222</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

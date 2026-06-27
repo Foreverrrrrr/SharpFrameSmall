@@ -34,6 +34,7 @@ namespace SharpFrameSmall.ViewModels
 
         public void AppendLog(string message)
         {
+            Log.Info(message);
             _logBuffer.AddFirst($"[{DateTime.Now:HH:mm:ss}] {message}");
             if (_logBuffer.Count > MaxLogLines)
                 _logBuffer.RemoveLast();

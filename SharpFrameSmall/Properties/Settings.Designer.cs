@@ -34,5 +34,17 @@ namespace SharpFrameSmall.Properties {
                 this["Language"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("http://127.0.0.1:12222")]
+        public string UpdateServerUrl {
+            get {
+                return ((string)(this["UpdateServerUrl"]));
+            }
+            set {
+                this["UpdateServerUrl"] = value;
+            }
+        }
     }
 }

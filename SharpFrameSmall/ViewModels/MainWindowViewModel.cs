@@ -19,6 +19,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Interop;
 using static SharpFrameSmall.Logic.Base.ProcessBase;
 
 namespace SharpFrameSmall.ViewModels
@@ -118,6 +119,11 @@ namespace SharpFrameSmall.ViewModels
                 aggregator.GetEvent<MainLogOutput>().Publish(new MainLogStructure() { Time = DateTime.Now.ToString(), Level = "正常", Value = "程序加载完成" });
                 var saved = _localizationService.LoadSavedCulture();
                 SelectedLanguage = Languages.FirstOrDefault(l => l.Culture == saved) ?? Languages[0];
+                CheckUpdate.Log += ((s) =>
+                {
+                    eventAggregator.GetEvent<AutoLogOutput>().Publish(s);
+                });
+                StartUpdateChecker();
             });
             eventAggregator.GetEvent<Notification>().Subscribe((t) =>
             {
@@ -176,6 +182,10 @@ namespace SharpFrameSmall.ViewModels
             });
             Close = new DelegateCommand(() =>
             {
+                // 先启动更新检测进程（Update.exe 会等待主程序退出后再执行更新）
+                string updateServerUrl = Properties.Settings.Default.UpdateServerUrl;
+                CheckUpdate check = new CheckUpdate(updateServerUrl);
+
                 try
                 {
                     Thread_Dispose();
@@ -192,7 +202,6 @@ namespace SharpFrameSmall.ViewModels
                     Application.Current.Shutdown();
                     Environment.Exit(0);
                 }
-                CheckUpdate check = new CheckUpdate(@"D:\\Logs\\Up\\bin\\Debug\\version.json");
             });
             PermissionCommand = new DelegateCommand(() =>
             {
@@ -251,6 +260,22 @@ namespace SharpFrameSmall.ViewModels
                 LoadingBarState = false;
             });
             Viewinitial();
+        }
+
+        private Update.UpdateListener _updateListener;
+        private void StartUpdateChecker()
+        {
+            try
+            {
+                string serverUrl = SharpFrameSmall.Properties.Settings.Default.UpdateServerUrl;
+                // TCP 端口 = HTTP 端口 + 1（如 http://x.x.x.x:12222 → TCP 12223）
+                _updateListener = new Update.UpdateListener(serverUrl);
+                _updateListener.Start();
+            }
+            catch
+            {
+                // 更新检测不是关键功能，启动失败不阻止程序运行
+            }
         }
 
         /// <summary>

@@ -32,6 +32,8 @@ namespace SharpFrameSmall
             base.OnInitialized();
         }
 
+
+
         /// <summary>
         /// 判断是否已经存在运行的实例
         /// </summary>
